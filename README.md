@@ -1,5 +1,7 @@
 # Next Level Week - Ecoleta
 
+![Ecoleta](https://github.com/ValchanOficial/NLWEcoleta/blob/master/docs/NLW.jpg)
+
 ## Start
 
 ```js
