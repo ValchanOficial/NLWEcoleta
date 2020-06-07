@@ -1,3 +1,4 @@
+// console.disableYellowBox = true;
 import React from 'react';
 import { StatusBar } from 'react-native';
 

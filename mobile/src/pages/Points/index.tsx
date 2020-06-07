@@ -12,7 +12,8 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
-  Alert
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 
 import api from '../../services/api';
@@ -82,7 +83,7 @@ const Points = () => {
   }, [selectedItems]);
 
   const handleNavigateBack = () => navigation.navigate('Home');
-  const handleNavigateToDetail = (id: number) => navigation.navigate('Detail', { point_id: id });
+  const handleNavigateToDetail = (id: number) => { navigation.navigate('Detail', { point_id: id })};
 
   const handleSelectItem = (id: number) => {
     const alreadySelected = selectedItems.findIndex(item => item === id);
@@ -104,7 +105,7 @@ const Points = () => {
         <Text style={styles.description}>Encontre um ponto de coleta.</Text>
 
         <View style={styles.mapContainer}>
-          {initialPosition[0] !== 0 && (
+          {initialPosition[0] !== 0 ? (
             <MapView 
               style={styles.map}
               initialRegion={{
@@ -114,7 +115,7 @@ const Points = () => {
                 longitudeDelta: 0.014
               }}
             >
-              {points && points.map(({id, name, image_url, latitude, longitude}) => (
+              {points.length !== 0 && points.map(({id, name, image_url, latitude, longitude}) => (
                 <Marker
                   key={String(id)}
                   style={styles.mapMarker}
@@ -134,6 +135,11 @@ const Points = () => {
                 </Marker>
               ))}
             </MapView>
+          ) : (
+            <View style={styles.loadingContainer}>
+              <Text style={styles.loadingTitle}>Carregando..</Text>
+              <ActivityIndicator size={50} color="#34cb79"/>
+            </View>
           )}
         </View>
       </View>
@@ -144,7 +150,7 @@ const Points = () => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 20 }}
         >
-          {items && items.map(({id, title, image_url}) => (
+          {(items.length !== 0 && initialPosition[0] !== 0) && items.map(({id, title, image_url}) => (
             <TouchableOpacity 
               key={String(id)} 
               style={[
@@ -225,6 +231,18 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 23,
     textAlign: 'center'
+  },
+
+  loadingContainer: {
+    flex: 1, 
+    justifyContent:"center", 
+    alignItems:"center"
+  },
+
+  loadingTitle: {
+    fontSize: 28,
+    fontFamily: 'Ubuntu_700Bold',
+    marginBottom: 24,
   },
 
   itemsContainer: {

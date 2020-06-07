@@ -1,25 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppLoading } from 'expo';
 import { Feather as Icon } from '@expo/vector-icons';
 import { Ubuntu_700Bold, useFonts } from '@expo-google-fonts/ubuntu';
 import { Roboto_400Regular, Roboto_500Medium } from '@expo-google-fonts/roboto';
 import { RectButton } from 'react-native-gesture-handler';
 import { useNavigation } from "@react-navigation/native";
+import axios from 'axios';
 import { 
   StyleSheet, 
   View, 
   ImageBackground, 
   Image, 
   Text,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform
+  Picker
 } from 'react-native';
+
+interface IBGEUFResponse {
+  sigla: string;
+}
+
+interface IBGECityResponse {
+  nome: string;
+}
 
 const Home = () => {
   const [uf, setUF] = useState('');
   const [city, setCity] = useState('');
+
+  const [initials, setInitials] = useState<string[]>([]);
+  const [cities, setCities] = useState<string[]>([]);
+
+  const [selectedUF, setselectedUF] = useState('Selecione uma UF');
+  const [selectedCity, setSelectedCity] = useState('Selecione uma cidade');
+
   const navigation = useNavigation();
+
+  useEffect(() => {
+    axios
+      .get<IBGEUFResponse[]>('https://servicodados.ibge.gov.br/api/v1/localidades/estados/')
+      .then(res => {
+      const ufInitials = res.data.map(uf => uf.sigla).sort();
+      setInitials(ufInitials);
+    });
+  }, []);
+
+  useEffect(() => {
+    if(selectedUF === 'Selecione uma UF') {
+      return;
+    }
+    axios
+      .get<IBGECityResponse[]>(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUF}/municipios`)
+      .then(res => {
+      const cityNames = res.data.map(city => city.nome).sort();
+      setCities(cityNames);
+    });    
+  }, [selectedUF]);
 
   const handleNavigateToPoints = () => navigation.navigate('Points', { uf, city });
 
@@ -34,52 +69,57 @@ const Home = () => {
   }
 
   return (
-    <KeyboardAvoidingView 
-      style={{ flex: 1 }} 
-      behavior={Platform.OS === 'ios' ? 'padding': 'padding'}
+    <ImageBackground 
+      source={require('../../assets/home-background.png')} 
+      style={styles.container}
+      imageStyle={{ height:368, width: 274 }}
     >
-      <ImageBackground 
-        source={require('../../assets/home-background.png')} 
-        style={styles.container}
-        imageStyle={{ height:368, width: 274 }}
-      >
-        <View style={styles.main}>
-          <View>
-            <Image source={require('../../assets/logo.png')}/>
-            <Text style={styles.title}>Seu marketplace de coleta de resíduos</Text>
-            <Text style={styles.description}>Ajudamos pessoas a encontrarem pontos de coleta de forma eficiente.</Text>
+      <View style={styles.main}>
+        <View>
+          <Image source={require('../../assets/logo.png')}/>
+          <Text style={styles.title}>Seu marketplace de coleta de resíduos</Text>
+          <Text style={styles.description}>Ajudamos pessoas a encontrarem pontos de coleta de forma eficiente.</Text>
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+
+        <Text style={styles.description}>Selecione uma UF</Text>
+          <Picker
+            selectedValue={selectedUF}
+            enabled={initials !== []}
+            style={styles.input}
+            onValueChange={(itemValue, itemIndex) => {setselectedUF(itemValue); setUF(itemValue)}}
+          >
+            {initials && initials.map((uf, index) => (
+              <Picker.Item key={index} label={uf} value={uf} />
+            ))}
+          </Picker>
+
+        <Text style={styles.description}>Selecione uma cidade</Text>
+        {selectedUF && (
+          <Picker
+            selectedValue={selectedCity}
+            enabled={selectedUF !== ''}
+            style={styles.input}
+            onValueChange={(itemValue, itemIndex) =>{ setSelectedCity(itemValue); setCity(itemValue)}}
+          >
+            {cities && cities.map((city, index) => (
+              <Picker.Item key={index} label={city} value={city} />
+            ))}
+          </Picker>
+        )}
+
+        <RectButton style={styles.button} onPress={handleNavigateToPoints}>
+          <View style={styles.buttonIcon}>
+            <Text>
+              <Icon name="arrow-right" color="#fff" size={24}/>
+            </Text>
           </View>
-        </View>
-
-        <View style={styles.footer}>
-          <TextInput 
-            style={styles.input} 
-            placeholder="Selecione a UF" 
-            value={uf}
-            maxLength={2}
-            autoCapitalize="characters"
-            autoCorrect={false}
-            onChangeText={setUF}
-          />
-          <TextInput 
-            style={styles.input} 
-            placeholder="Selecione a Cidade"
-            value={city}
-            autoCorrect={false}
-            onChangeText={setCity}
-          />
-
-          <RectButton style={styles.button} onPress={handleNavigateToPoints}>
-            <View style={styles.buttonIcon}>
-              <Text>
-                <Icon name="arrow-right" color="#fff" size={24}/>
-              </Text>
-            </View>
-            <Text style={styles.buttonText}>Entrar</Text>
-          </RectButton>
-        </View>
-      </ImageBackground>
-    </KeyboardAvoidingView>  
+          <Text style={styles.buttonText}>Entrar</Text>
+        </RectButton>
+      </View>
+    </ImageBackground> 
   );
 }
 

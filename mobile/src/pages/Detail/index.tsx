@@ -42,9 +42,7 @@ const Detail = () => {
   const routeParams = route.params as Params;
 
   useEffect(() => {
-    api.get(`points/${routeParams.point_id}`).then(res => {
-      setData(res.data);
-    });
+    api.get(`points/${routeParams.point_id}`).then(res => setData(res.data));
   }, [])
 
   const handleNavigateBack = () => navigation.navigate('Home');

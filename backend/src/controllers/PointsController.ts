@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import knex from '../database/connection';
-import { getAddress } from '../config/config';
+import { ADDRESS } from '../config/config';
 
 class PointsController {
   async index(request: Request, response: Response) {
@@ -19,21 +19,20 @@ class PointsController {
       .select('points.*'));
 
     const serializedPoints = points.map(point => {
-      return { 
-        ...points,
-        image_url: `http://${getAddress()}:3333/uploads/${point.image}`
+      return {
+        ...point,
+        image_url: `http://${ADDRESS}:3333/uploads/${point.image}`
       };
     });
-
     return response.json(serializedPoints);
   }
 
   async show(request: Request, response: Response) {
     const { id } = request.params;
 
-    const point = await Promise.resolve(knex('points').where('id', id).first());
+    const pointValue = await Promise.resolve(knex('points').where('id', id).first());
 
-    if (!point) {
+    if (!pointValue) {
       return response.status(400).json({ message: 'Point not found!' });
     }
 
@@ -42,12 +41,12 @@ class PointsController {
       .where('point_items.point_id', id)
       .select('items.title'));
 
-    const serializedPoint = {
-      ...point,
-      image_url: `http://${getAddress()}:3333/uploads/${point.image}`
+    const point = {
+      ...pointValue,
+      image_url: `http://${ADDRESS}:3333/uploads/${pointValue.image}`
     };
 
-    return response.json({ serializedPoint, items });
+    return response.json({ point, items });
   }
 
   async create(request: Request, response: Response) {

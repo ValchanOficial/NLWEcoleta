@@ -1,5 +1,7 @@
+import localIpUrl from 'local-ip-url';
+
 export const PORT = 3333;
 
-export const getAddress = () => {
-    return 'localhost';
-};
+console.log(localIpUrl('public'))
+
+export const ADDRESS = localIpUrl('public') || 'localhost';
