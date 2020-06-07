@@ -2,8 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import routes from './routes';
+import { errors } from "celebrate";
 
-const PORT = 3333;
+import { PORT } from './config/config';
 
 const app = express();
 
@@ -12,6 +13,8 @@ app.use(express.json());
 app.use(routes);
 
 app.use('/uploads', express.static(path.resolve(__dirname, '..', 'uploads')));
+
+app.use(errors());
 
 app.listen(PORT, () => {
   console.log(`[*] Server running on port: ${PORT}`);
