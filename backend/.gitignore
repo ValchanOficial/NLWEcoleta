@@ -1,4 +1,6 @@
 node_modules/
 package-lock.json
 yarn.lock
-src/database/database.sqlite
+*.sqlite
+uploads/*
+!uploads/.gitkeep
